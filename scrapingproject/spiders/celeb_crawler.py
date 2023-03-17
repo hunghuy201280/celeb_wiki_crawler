@@ -6,13 +6,17 @@ class CelebCrawlerSpider(scrapy.Spider):
     name = 'celeb-crawler'
     allowed_domains = ['en.wikipedia.org']
     celebs = [
-        "Vanessa Hudgens",
-        "Kim Kardashian",
-        "Harry Styles",
-        "Paris Hilton",
-        "Kendall Jenner",
-        "Bretman Rock",
-        "Hunter Schafer",
+       "Nicki Minaj",
+"Elizabeth Hurley",
+"Dwayne_Johnson",
+"Maude Apatow",
+"Latto",
+"Addison Rae",
+"Olivia Rodrigo",
+"Kim Petras",
+"Storm Reid",
+"Bella Thorne",
+
 
     ]
     start_urls = ["https://en.wikipedia.org/wiki/"+x for x in celebs]
@@ -22,16 +26,35 @@ class CelebCrawlerSpider(scrapy.Spider):
         full_name_selector = "//td[@class='infobox-data']/div[@class='nickname']/text()"
         b_day_selector = "//td[@class='infobox-data']/text()"
         birth_place_selector = "//td[@class='infobox-data']/div[@class='birthplace']//text()"
-        year_active_selector = "////th[contains(text(),'Years') and contains(text(),'active')]//parent::node()//td//text()"
+        year_active_selector = "//*[contains(text(),'Years') and contains(text(),'active')]//parent::node()//td//text()"
         occupation_selector = "//th[contains(text(),'Occupation')]//parent::node()//li//text()"
         occupation_selector_2 = "//th[contains(text(),'Occupation')]//parent::node()//td//text()"
 
         nick_name = response.xpath(nickname_selector).get()
         full_name = response.xpath(full_name_selector).get()
+
+        if full_name==None:
+            full_name = nick_name
+
         b_day = response.xpath(b_day_selector).get()
         birth_place = "".join(response.xpath(birth_place_selector).getall(
         ))
-        years_active = response.xpath(year_active_selector).get()
+
+        year_active_temp=response.xpath(year_active_selector).getall()
+        if len(year_active_temp) >1 and "present" not in year_active_temp[0]:
+            year_active_selector="//*[contains(text(),'Years') and contains(text(),'active')]//parent::node()//td//*[not(self::style)]//text()";
+            years_active =", ".join(response.xpath(year_active_selector).getall())
+        else:
+            years_active = response.xpath(year_active_selector).get()
+         
+        
+        if years_active==None:
+            year_active_selector="//*[contains(text(),'Years') and contains(text(),'active')]//parent::node()//parent::node()//td//text()"
+            years_active = response.xpath(year_active_selector).get()
+
+        
+
+
         occupation = response.xpath(occupation_selector).getall()
         if len(occupation) == 0:
             occupation = response.xpath(occupation_selector_2).getall()
